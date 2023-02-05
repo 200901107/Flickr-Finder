@@ -1,3 +1,13 @@
 <resources>
     <dimen name="fab_margin">16dp</dimen>
+    <dimen name="margin_16">16dp</dimen>
+    <dimen name="padding_4">4dp</dimen>
+    <dimen name="padding_8">8dp</dimen>
+
+
+    <dimen name="photo_height">100dp</dimen>
+    <dimen name="photo_title_size">18sp</dimen>
+
+    <dimen name="size_48">48dp</dimen>
+
 </resources>
