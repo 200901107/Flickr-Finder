@@ -1,16 +1,24 @@
 package com.flickrfinder.android.details.ui
 
-import android.content.Context
-import android.widget.ImageView
 import androidx.lifecycle.ViewModel
-import com.flickrfinder.android.ImageLoader
-import dagger.hilt.android.lifecycle.HiltViewModel
-import javax.inject.Inject
+import kotlinx.coroutines.flow.MutableStateFlow
 
-@HiltViewModel
-class PhotoDetailsViewModel @Inject constructor(private val imageLoader: ImageLoader) : ViewModel() {
+sealed class UiState {
+    object NoState: UiState()
+    object ClickedBackButton: UiState()
+    data class LoadPhoto(val url: String): UiState()
+}
 
-    fun showFullImage(url: String, context: Context, imageView: ImageView) {
-        imageLoader.loadImage(url, context, imageView)
+class PhotoDetailsViewModel : ViewModel() {
+
+    private val _uiState = MutableStateFlow<UiState>(UiState.NoState)
+    val uiState = _uiState
+
+    fun showFullImage(url: String) {
+        _uiState.value = UiState.LoadPhoto(url)
+    }
+
+    fun onBackButtonClicked() {
+        _uiState.value = UiState.ClickedBackButton
     }
 }

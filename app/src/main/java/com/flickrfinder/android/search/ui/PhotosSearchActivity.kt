@@ -15,15 +15,18 @@ import androidx.recyclerview.widget.RecyclerView
 import com.flickrfinder.android.AppConstants.Companion.EXTRAS_KEY_URL
 import com.flickrfinder.android.ImageLoader
 import com.flickrfinder.android.R
+import com.flickrfinder.android.data.PhotoData
 import com.flickrfinder.android.details.ui.PhotoDetailsActivity
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import java.util.ArrayList
 import javax.inject.Inject
 
 
 @AndroidEntryPoint
 class PhotosSearchActivity : AppCompatActivity() {
 
+    private lateinit var photosAdapter: PhotosAdapter
     private val photosSearchViewModel: PhotosSearchViewModel by viewModels()
 
     @Inject
@@ -36,7 +39,7 @@ class PhotosSearchActivity : AppCompatActivity() {
         val recyclerView = findViewById<RecyclerView>(R.id.recyclerView)
         val recyclerViewManager = GridLayoutManager(this, 3)
         recyclerView.layoutManager = recyclerViewManager
-        val photosAdapter = PhotosAdapter(arrayListOf(), imageLoader, PhotosAdapter.OnClickListener {
+        photosAdapter = PhotosAdapter(arrayListOf(), imageLoader, PhotosAdapter.OnClickListener {
             onPhotoClick(it)
         })
         recyclerView.adapter = photosAdapter
@@ -59,7 +62,15 @@ class PhotosSearchActivity : AppCompatActivity() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
                 photosSearchViewModel.photosList.collect {
-                    photosAdapter.setList(it)
+                    when (it) {
+                        is ApiStatus.Success -> onPhotosFetchComplete(it.data)
+                        is ApiStatus.Loading -> {
+                            //show loader
+                        }
+                        is ApiStatus.Failure -> {
+                            // show error view with retry
+                        }
+                    }
                 }
             }
         }
@@ -67,7 +78,11 @@ class PhotosSearchActivity : AppCompatActivity() {
         photosSearchViewModel.searchPublicPhotos()
     }
 
-    fun onPhotoClick(fullImageUrl: String) {
+    private fun onPhotosFetchComplete(data: ArrayList<PhotoData>) {
+        photosAdapter.setList(data)
+    }
+
+    private fun onPhotoClick(fullImageUrl: String) {
         val intent = Intent(this, PhotoDetailsActivity::class.java)
         intent.putExtra(EXTRAS_KEY_URL, fullImageUrl)
         startActivity(intent)
